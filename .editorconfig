@@ -289,6 +289,10 @@ dotnet_diagnostic.SA1201.severity = none
 dotnet_diagnostic.SA0001.severity = none
 dotnet_diagnostic.NU1604.severity = none
 dotnet_diagnostic.CA1515.severity = none
+dotnet_diagnostic.CA2007.severity = none
+dotnet_diagnostic.CA1031.severity = none
+dotnet_diagnostic.CA1062.severity = none
+dotnet_diagnostic.SA1005.severity = none
 
 # Отключаем или меняем уровень серьезности предупреждения SA1310, чтобы не конфликтовало с новыми правилами.
 dotnet_diagnostic.SA1310.severity = none
