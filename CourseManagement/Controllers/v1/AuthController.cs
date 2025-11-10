@@ -1,14 +1,16 @@
-﻿using CourseManagement.Contracts.Teachers;
+﻿using Asp.Versioning;
+using CourseManagement.Contracts.Teachers;
 using CourseManagement.Models;
 using CourseManagement.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CourseManagement.Controllers;
+namespace CourseManagement.Controllers.v1;
 
 [AllowAnonymous]
 [ApiController]
-[Route("api/auth")]
+[Route("api/v{version:apiVersion}/auth")]
+[ApiVersion(1)]
 public class AuthController : ControllerBase
 {
     private readonly ITeacherService _teacherService;
@@ -34,12 +36,21 @@ public class AuthController : ControllerBase
             });
         }
 
-        TeacherDto teacherDto = await _teacherService.AddAsync(
+        Teacher teacher = await _teacherService.AddAsync(
             request.Login,
             request.Password,
             request.LastName,
             request.FirstName,
             request.MiddleName);
+
+        TeacherDto teacherDto = new()
+        {
+            Id = teacher.Id,
+            Login = teacher.Login,
+            FirstName = teacher.FirstName,
+            LastName = teacher.LastName,
+            MiddleName = teacher.MiddleName,
+        };
 
         // TODO: JWT Token Access
         return CreatedAtAction(

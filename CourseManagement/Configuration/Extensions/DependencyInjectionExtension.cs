@@ -1,4 +1,6 @@
-﻿using CourseManagement.Configuration.Constants;
+﻿using Asp.Versioning;
+using CourseManagement.Configuration.Constants;
+using CourseManagement.Configuration.Swagger;
 using CourseManagement.Models;
 using CourseManagement.Repositories;
 using CourseManagement.Services;
@@ -13,10 +15,33 @@ public static class DependencyInjectionExtension
         IConfiguration configuration)
     {
         services.AddControllers(options => options.SuppressAsyncSuffixInActionNames = false);
-        services.AddSwaggerGen();
+        services.AddSwaggerSetup();
         services.AddPostgres(configuration);
         services.AddApplicationRepositories();
         services.AddApplicationServices();
+
+        return services;
+    }
+
+    private static IServiceCollection AddSwaggerSetup(
+        this IServiceCollection services)
+    {
+        services.ConfigureOptions<ConfigureSwaggerOptions>();
+        services
+            .AddSwaggerGen()
+            .AddApiVersioning(options =>
+            {
+                options.AssumeDefaultVersionWhenUnspecified = true;
+                options.DefaultApiVersion = new ApiVersion(1);
+                options.ReportApiVersions = true;
+                options.ApiVersionReader = ApiVersionReader.Combine(
+                    new UrlSegmentApiVersionReader());
+            })
+            .AddApiExplorer(options =>
+            {
+                options.GroupNameFormat = "'v'V";
+                options.SubstituteApiVersionInUrl = true;
+            });
 
         return services;
     }
@@ -42,7 +67,7 @@ public static class DependencyInjectionExtension
     }
 
     private static IServiceCollection AddApplicationRepositories(
-    this IServiceCollection services)
+        this IServiceCollection services)
     {
         services.AddScoped<ITeachersRepository, TeachersRepository>();
         services.AddScoped<ICoursesRepository, CoursesRepository>();
