@@ -6,16 +6,16 @@ namespace CourseManagement.Services;
 
 public interface ITeacherService
 {
-    Task<TeacherDto> AddAsync(
+    Task<Teacher> AddAsync(
         string login,
         string passwordHash,
         string firstName,
         string lastName,
         string middleName);
 
-    Task<IEnumerable<TeacherDto>> GetAsync();
+    Task<IEnumerable<Teacher>> GetAsync();
 
-    Task<TeacherDto> GetByIdAsync(Guid id);
+    Task<Teacher> GetByIdAsync(Guid id);
 
     Task UpdateByIdAsync(
         Guid id,
@@ -37,7 +37,7 @@ public class TeacherService : ITeacherService
         _teachersRepository = teachersRepository;
     }
 
-    public async Task<TeacherDto> AddAsync(
+    public async Task<Teacher> AddAsync(
         string login,
         string passwordHash,
         string firstName,
@@ -52,52 +52,23 @@ public class TeacherService : ITeacherService
             lastName,
             middleName);
 
-        TeacherDto teacherDto = new()
-        {
-            Id = teacher.Id,
-            Login = login,
-            FirstName = firstName,
-            LastName = lastName,
-            MiddleName = middleName,
-        };
-
-        return teacherDto;
+        return teacher;
     }
 
-    public async Task<IEnumerable<TeacherDto>> GetAsync()
+    public async Task<IEnumerable<Teacher>> GetAsync()
     {
         IEnumerable<Teacher> teachers = await _teachersRepository.GetAsync();
 
-        IEnumerable<TeacherDto> teachersDto = teachers
-            .Select(t => new TeacherDto
-            {
-                Id = t.Id,
-                Login = t.Login,
-                FirstName = t.FirstName,
-                LastName = t.LastName,
-                MiddleName = t.MiddleName,
-            })
-            .ToList();
-
-        return teachersDto;
+        return teachers;
     }
 
-    public async Task<TeacherDto> GetByIdAsync(Guid id)
+    public async Task<Teacher> GetByIdAsync(Guid id)
     {
         Teacher? teacher = await _teachersRepository
             .GetByIdAsync(id)
             ?? throw new InvalidOperationException();
 
-        TeacherDto teacherDto = new()
-        {
-            Id = teacher.Id,
-            Login = teacher.Login,
-            FirstName = teacher.FirstName,
-            LastName = teacher.LastName,
-            MiddleName = teacher.MiddleName,
-        };
-
-        return teacherDto;
+        return teacher;
     }
 
     public async Task UpdateByIdAsync(

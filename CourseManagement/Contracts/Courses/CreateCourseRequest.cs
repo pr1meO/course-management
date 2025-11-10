@@ -1,6 +1,6 @@
 ﻿namespace CourseManagement.Contracts.Courses
 {
-    public class CreateCourseRequest
+    public sealed class CreateCourseRequest
     {
         public Guid TeacherId { get; set; }
 

@@ -1,11 +1,14 @@
-﻿using CourseManagement.Contracts.Teachers;
+﻿using Asp.Versioning;
+using CourseManagement.Contracts.Teachers;
+using CourseManagement.Models;
 using CourseManagement.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CourseManagement.Controllers;
+namespace CourseManagement.Controllers.v1;
 
 [ApiController]
-[Route("api/teachers")]
+[ApiVersion("1")]
+[Route("api/v{version:apiVersion}/teachers")]
 public class TeacherController : ControllerBase
 {
     private readonly ITeacherService _teacherService;
@@ -19,15 +22,35 @@ public class TeacherController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAsync()
     {
-        IEnumerable<TeacherDto> teacherDtos = await _teacherService.GetAsync();
+        IEnumerable<Teacher> teachers = await _teacherService.GetAsync();
 
-        return Ok(teacherDtos);
+        IEnumerable<TeacherDto> teachersDto = teachers
+            .Select(t => new TeacherDto
+            {
+                Id = t.Id,
+                Login = t.Login,
+                FirstName = t.FirstName,
+                LastName = t.LastName,
+                MiddleName = t.MiddleName,
+            })
+            .ToList();
+
+        return Ok(teachersDto);
     }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetByIdAsync(Guid id)
     {
-        TeacherDto teacherDto = await _teacherService.GetByIdAsync(id);
+        Teacher teacher = await _teacherService.GetByIdAsync(id);
+
+        TeacherDto teacherDto = new()
+        {
+            Id = teacher.Id,
+            Login = teacher.Login,
+            FirstName = teacher.FirstName,
+            LastName = teacher.LastName,
+            MiddleName = teacher.MiddleName,
+        };
 
         return Ok(teacherDto);
     }
@@ -55,10 +78,7 @@ public class TeacherController : ControllerBase
             request.LastName,
             request.MiddleName);
 
-        return Ok(new
-        {
-            Message = "Resource updated successfully.",
-        });
+        return NoContent();
     }
 
     [HttpDelete("{id:guid}")]
@@ -66,9 +86,6 @@ public class TeacherController : ControllerBase
     {
         await _teacherService.RemoveByIdAsync(id);
 
-        return Ok(new
-        {
-            Message = "Resource deleted successfully.",
-        });
+        return NoContent();
     }
 }

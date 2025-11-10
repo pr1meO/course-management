@@ -8,5 +8,7 @@ public sealed class CourseDto
 
     public string Description { get; set; } = default!;
 
+    public DateTime? CreatedAt { get; set; }
+
     public Guid TeacherId { get; set; }
 }

@@ -1,11 +1,14 @@
-﻿using CourseManagement.Contracts.Courses;
+﻿using Asp.Versioning;
+using CourseManagement.Contracts.Courses;
+using CourseManagement.Models;
 using CourseManagement.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CourseManagement.Controllers;
+namespace CourseManagement.Controllers.v2;
 
 [ApiController]
-[Route("api/courses")]
+[Route("api/v{version:apiVersion}/courses")]
+[ApiVersion(2)]
 public class CourseController : ControllerBase
 {
     private readonly ICourseService _courseService;
@@ -28,10 +31,19 @@ public class CourseController : ControllerBase
             });
         }
 
-        CourseDto courseDto = await _courseService.AddAsync(
+        Course course = await _courseService.AddAsync(
             request.Title,
             request.Description,
             request.TeacherId);
+
+        CourseDto courseDto = new()
+        {
+            Id = course.Id,
+            Title = course.Title,
+            Description = course.Description,
+            TeacherId = course.TeacherId,
+            CreatedAt = course.CreatedAt,
+        };
 
         return CreatedAtAction(
             nameof(GetByIdAsync),
@@ -42,15 +54,35 @@ public class CourseController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAsync()
     {
-        IEnumerable<CourseDto> courseDtos = await _courseService.GetAsync();
+        IEnumerable<Course> courses = await _courseService.GetAsync();
 
-        return Ok(courseDtos);
+        IEnumerable<CourseDto> coursesDto = courses
+            .Select(c => new CourseDto
+            {
+                Id = c.Id,
+                Title = c.Title,
+                Description = c.Description,
+                TeacherId = c.TeacherId,
+                CreatedAt = c.CreatedAt,
+            })
+            .ToList();
+
+        return Ok(coursesDto);
     }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetByIdAsync(Guid id)
     {
-        CourseDto courseDto = await _courseService.GetByIdAsync(id);
+        Course course = await _courseService.GetByIdAsync(id);
+
+        CourseDto courseDto = new()
+        {
+            Id = course.Id,
+            Title = course.Title,
+            Description = course.Description,
+            TeacherId = course.TeacherId,
+            CreatedAt = course.CreatedAt,
+        };
 
         return Ok(courseDto);
     }
@@ -75,10 +107,7 @@ public class CourseController : ControllerBase
             request.Title,
             request.Description);
 
-        return Ok(new
-        {
-            Message = "Resource updated successfully.",
-        });
+        return NoContent();
     }
 
     [HttpDelete("{id:guid}")]
@@ -86,9 +115,6 @@ public class CourseController : ControllerBase
     {
         await _courseService.RemoveByIdAsync(id);
 
-        return Ok(new
-        {
-            Message = "Resource deleted successfully.",
-        });
+        return NoContent();
     }
 }
