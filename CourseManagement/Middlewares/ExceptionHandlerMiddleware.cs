@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Security.Authentication;
 using CourseManagement.Contracts;
 
 namespace CourseManagement.Middlewares;
@@ -28,10 +29,20 @@ public class ExceptionHandlerMiddleware
     {
         ExceptionResponse response = exception switch
         {
-            InvalidOperationException _ => new()
+            KeyNotFoundException _ => new()
             {
                 StatusCode = HttpStatusCode.NotFound,
-                Message = "The resource was not found.",
+                Message = "The requested resource could not be found.",
+            },
+            InvalidOperationException _ => new()
+            {
+                StatusCode = HttpStatusCode.Conflict,
+                Message = "A conflict occurred while processing your request.",
+            },
+            AuthenticationException _ => new()
+            {
+                StatusCode = HttpStatusCode.Unauthorized,
+                Message = "Authentication failed. Please check your credentials and try again.",
             },
             _ => new()
             {

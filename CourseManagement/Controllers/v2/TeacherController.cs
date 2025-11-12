@@ -5,12 +5,12 @@ using CourseManagement.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CourseManagement.Controllers.v1;
+namespace CourseManagement.Controllers.v2;
 
 [AllowAnonymous]
 [ApiController]
 [Route("api/v{version:apiVersion}/teachers")]
-[ApiVersion(1)]
+[ApiVersion(2)]
 public class TeacherController : ControllerBase
 {
     private readonly ITeacherService _teacherService;

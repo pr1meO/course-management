@@ -2,7 +2,7 @@
 
 namespace CourseManagement.Contracts;
 
-public class ExceptionResponse
+public sealed class ExceptionResponse
 {
     public HttpStatusCode StatusCode { get; set; }
 

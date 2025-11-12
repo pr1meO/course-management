@@ -1,4 +1,4 @@
-﻿using CourseManagement.Contracts.Teachers;
+﻿using System.Security.Authentication;
 using CourseManagement.Models;
 using CourseManagement.Repositories;
 
@@ -6,6 +6,8 @@ namespace CourseManagement.Services;
 
 public interface ITeacherService
 {
+    Task ExistsByLoginAsync(string login);
+
     Task<Teacher> AddAsync(
         string login,
         string passwordHash,
@@ -16,6 +18,8 @@ public interface ITeacherService
     Task<IEnumerable<Teacher>> GetAsync();
 
     Task<Teacher> GetByIdAsync(Guid id);
+
+    Task<Teacher> GetByLoginAsync(string login);
 
     Task UpdateByIdAsync(
         Guid id,
@@ -31,10 +35,17 @@ public class TeacherService : ITeacherService
 {
     private readonly ITeachersRepository _teachersRepository;
 
-    // private readonly IPasswordHasher _hasher;
     public TeacherService(ITeachersRepository teachersRepository)
     {
         _teachersRepository = teachersRepository;
+    }
+
+    public async Task ExistsByLoginAsync(string login)
+    {
+        bool exists = await _teachersRepository.ExistsByLoginAsync(login);
+
+        if (exists)
+            throw new InvalidOperationException();
     }
 
     public async Task<Teacher> AddAsync(
@@ -44,7 +55,6 @@ public class TeacherService : ITeacherService
         string lastName,
         string middleName)
     {
-        // IPasswordHasher
         Teacher teacher = await _teachersRepository.AddAsync(
             login,
             passwordHash,
@@ -66,7 +76,16 @@ public class TeacherService : ITeacherService
     {
         Teacher? teacher = await _teachersRepository
             .GetByIdAsync(id)
-            ?? throw new InvalidOperationException();
+            ?? throw new KeyNotFoundException();
+
+        return teacher;
+    }
+
+    public async Task<Teacher> GetByLoginAsync(string login)
+    {
+        Teacher? teacher = await _teachersRepository
+            .GetByLoginAsync(login)
+            ?? throw new AuthenticationException();
 
         return teacher;
     }
@@ -86,7 +105,7 @@ public class TeacherService : ITeacherService
             middleName);
 
         if (result == 0)
-            throw new InvalidOperationException();
+            throw new KeyNotFoundException();
     }
 
     public async Task RemoveByIdAsync(Guid id)
@@ -94,6 +113,6 @@ public class TeacherService : ITeacherService
         int result = await _teachersRepository.RemoveByIdAsync(id);
 
         if (result == 0)
-            throw new InvalidOperationException();
+            throw new KeyNotFoundException();
     }
 }
