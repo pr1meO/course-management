@@ -1,15 +1,14 @@
-﻿namespace CourseManagement.Contracts.Teachers
+﻿namespace CourseManagement.Contracts.Teachers;
+
+public sealed class TeacherDto
 {
-    public sealed class TeacherDto
-    {
-        public Guid Id { get; set; }
+    public Guid Id { get; set; }
 
-        public string Login { get; set; } = default!;
+    public string Login { get; set; } = default!;
 
-        public string LastName { get; set; } = default!;
+    public string LastName { get; set; } = default!;
 
-        public string FirstName { get; set; } = default!;
+    public string FirstName { get; set; } = default!;
 
-        public string MiddleName { get; set; } = default!;
-    }
+    public string MiddleName { get; set; } = default!;
 }

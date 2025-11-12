@@ -1,5 +1,4 @@
-﻿using CourseManagement.Contracts.Courses;
-using CourseManagement.Models;
+﻿using CourseManagement.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CourseManagement.Repositories;
@@ -7,6 +6,8 @@ namespace CourseManagement.Repositories;
 public interface ITeachersRepository
 {
     Task<bool> ExistsByIdAsync(Guid id);
+
+    Task<bool> ExistsByLoginAsync(string login);
 
     Task<Teacher> AddAsync(
         string login,
@@ -18,6 +19,8 @@ public interface ITeachersRepository
     Task<IEnumerable<Teacher>> GetAsync();
 
     Task<Teacher?> GetByIdAsync(Guid id);
+
+    Task<Teacher?> GetByLoginAsync(string login);
 
     Task<int> UpdateByIdAsync(
         Guid id,
@@ -42,6 +45,12 @@ public class TeachersRepository : ITeachersRepository
     {
         return await _appDbContext.Teachers
             .AnyAsync(b => b.Id == id);
+    }
+
+    public async Task<bool> ExistsByLoginAsync(string login)
+    {
+        return await _appDbContext.Teachers
+            .AnyAsync(b => b.Login == login);
     }
 
     public async Task<Teacher> AddAsync(
@@ -79,6 +88,13 @@ public class TeachersRepository : ITeachersRepository
         return await _appDbContext.Teachers
             .AsNoTracking()
             .FirstOrDefaultAsync(t => t.Id == id);
+    }
+
+    public async Task<Teacher?> GetByLoginAsync(string login)
+    {
+        return await _appDbContext.Teachers
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t => t.Login == login);
     }
 
     public async Task<int> UpdateByIdAsync(

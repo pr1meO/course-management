@@ -45,7 +45,7 @@ public class CourseService : ICourseService
         bool exists = await _teachersRepository.ExistsByIdAsync(teacherId);
 
         if (!exists)
-            throw new InvalidOperationException();
+            throw new KeyNotFoundException();
 
         Course course = await _coursesRepository.AddAsync(title, description, teacherId);
 
@@ -63,7 +63,7 @@ public class CourseService : ICourseService
     {
         Course? course = await _coursesRepository
             .GetByIdAsync(id)
-            ?? throw new InvalidOperationException();
+            ?? throw new KeyNotFoundException();
 
         return course;
     }
@@ -77,7 +77,7 @@ public class CourseService : ICourseService
         bool exists = await _teachersRepository.ExistsByIdAsync(teacherId);
 
         if (!exists)
-            throw new InvalidOperationException();
+            throw new KeyNotFoundException();
 
         int result = await _coursesRepository.UpdateByIdAsync(
             id,
@@ -86,7 +86,7 @@ public class CourseService : ICourseService
             description);
 
         if (result == 0)
-            throw new InvalidOperationException();
+            throw new KeyNotFoundException();
     }
 
     public async Task RemoveByIdAsync(Guid id)
@@ -94,6 +94,6 @@ public class CourseService : ICourseService
         int result = await _coursesRepository.RemoveByIdAsync(id);
 
         if (result == 0)
-            throw new InvalidOperationException();
+            throw new KeyNotFoundException();
     }
 }

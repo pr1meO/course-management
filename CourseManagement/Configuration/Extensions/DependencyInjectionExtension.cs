@@ -1,9 +1,11 @@
 ﻿using Asp.Versioning;
 using CourseManagement.Configuration.Constants;
+using CourseManagement.Configuration.Options;
 using CourseManagement.Configuration.Swagger;
 using CourseManagement.Models;
 using CourseManagement.Repositories;
 using CourseManagement.Services;
+using CourseManagement.Services.Auth;
 using Microsoft.EntityFrameworkCore;
 
 namespace CourseManagement.Configuration.Extensions;
@@ -17,6 +19,9 @@ public static class DependencyInjectionExtension
         services.AddControllers(options => options.SuppressAsyncSuffixInActionNames = false);
         services.AddSwaggerSetup();
         services.AddPostgres(configuration);
+        services.AddOptions(configuration);
+        services.AddSecurity();
+        services.AddAuthenticationCore();
         services.AddApplicationRepositories();
         services.AddApplicationServices();
 
@@ -53,6 +58,35 @@ public static class DependencyInjectionExtension
         services.AddDbContext<AppDbContext>(builder =>
             builder.UseNpgsql(
                 configuration.GetConnectionString(ConnectionStrings.POSTGRES)));
+
+        return services;
+    }
+
+    private static IServiceCollection AddAuthenticationCore(
+        this IServiceCollection services)
+    {
+        services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<ITokenFactory, TokenFactory>();
+        services.AddScoped<IClaimProvider, ClaimProvider>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddSecurity(
+        this IServiceCollection services)
+    {
+        services.AddScoped<IPasswordHasher, PasswordHasher>();
+        services.AddScoped<ISigningService, SigningService>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddOptions(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.Configure<TokenOptions>(configuration
+            .GetSection(nameof(TokenOptions)));
 
         return services;
     }

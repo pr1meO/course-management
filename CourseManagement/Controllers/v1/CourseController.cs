@@ -2,10 +2,12 @@
 using CourseManagement.Contracts.Courses;
 using CourseManagement.Models;
 using CourseManagement.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CourseManagement.Controllers.v1;
 
+[AllowAnonymous]
 [ApiController]
 [Route("api/v{version:apiVersion}/courses")]
 [ApiVersion(1)]

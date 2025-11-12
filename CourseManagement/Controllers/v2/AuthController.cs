@@ -1,24 +1,24 @@
 ﻿using Asp.Versioning;
+using CourseManagement.Contracts;
 using CourseManagement.Contracts.Teachers;
 using CourseManagement.Models;
-using CourseManagement.Services;
+using CourseManagement.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CourseManagement.Controllers.v1;
+namespace CourseManagement.Controllers.v2;
 
 [AllowAnonymous]
 [ApiController]
 [Route("api/v{version:apiVersion}/auth")]
-[ApiVersion(1)]
+[ApiVersion(2)]
 public class AuthController : ControllerBase
 {
-    private readonly ITeacherService _teacherService;
+    private readonly IIdentityService _identityService;
 
-    public AuthController(
-        ITeacherService teacherService)
+    public AuthController(IIdentityService identityService)
     {
-        _teacherService = teacherService;
+        _identityService = identityService;
     }
 
     [HttpPost("register")]
@@ -36,7 +36,7 @@ public class AuthController : ControllerBase
             });
         }
 
-        Teacher teacher = await _teacherService.AddAsync(
+        Teacher teacher = await _identityService.RegisterAsync(
             request.Login,
             request.Password,
             request.LastName,
@@ -57,5 +57,27 @@ public class AuthController : ControllerBase
             nameof(Teacher),
             new { teacherDto.Id },
             teacherDto);
+    }
+
+    [HttpPost("login")]
+    public async Task<IActionResult> LoginAsync([FromBody] LoginTeacherRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Login) ||
+            string.IsNullOrWhiteSpace(request.Password))
+        {
+            return BadRequest(new
+            {
+                Message = "Invalid request data.",
+            });
+        }
+
+        JwtTokenResponse response = new()
+        {
+            Access = await _identityService.LoginAsync(
+                request.Login,
+                request.Password),
+        };
+
+        return Ok(response);
     }
 }

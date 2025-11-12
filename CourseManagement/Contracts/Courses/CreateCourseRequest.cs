@@ -1,11 +1,10 @@
-﻿namespace CourseManagement.Contracts.Courses
+﻿namespace CourseManagement.Contracts.Courses;
+
+public sealed class CreateCourseRequest
 {
-    public sealed class CreateCourseRequest
-    {
-        public Guid TeacherId { get; set; }
+    public Guid TeacherId { get; set; }
 
-        public string Title { get; set; } = default!;
+    public string Title { get; set; } = default!;
 
-        public string Description { get; set; } = default!;
-    }
+    public string Description { get; set; } = default!;
 }
