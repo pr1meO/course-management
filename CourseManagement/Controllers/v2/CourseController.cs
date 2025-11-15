@@ -2,12 +2,16 @@
 using CourseManagement.Contracts.Courses;
 using CourseManagement.Models;
 using CourseManagement.Services;
+using IdempotentAPI.Filters;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CourseManagement.Controllers.v2;
 
+[AllowAnonymous]
 [ApiController]
 [Route("api/v{version:apiVersion}/courses")]
+[Produces("application/json")]
 [ApiVersion(2)]
 public class CourseController : ControllerBase
 {
@@ -19,6 +23,7 @@ public class CourseController : ControllerBase
         _courseService = courseService;
     }
 
+    [Idempotent]
     [HttpPost]
     public async Task<IActionResult> CreateAsync([FromBody] CreateCourseRequest request)
     {

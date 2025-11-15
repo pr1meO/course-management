@@ -5,6 +5,8 @@
     <PackageReference Include="Asp.Versioning.Mvc" />
     <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" />
     <PackageReference Include="BCrypt.Net-Next" />
+    <PackageReference Include="IdempotentAPI" />
+    <PackageReference Include="IdempotentAPI.Cache.DistributedCache" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
@@ -12,11 +14,13 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="Swashbuckle.AspNetCore.Swagger" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" />
+    <PackageReference Include="System.Text.Encodings.Web" />
   </ItemGroup>
 
 </Project>

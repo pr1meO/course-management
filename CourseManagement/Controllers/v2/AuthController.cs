@@ -3,6 +3,7 @@ using CourseManagement.Contracts;
 using CourseManagement.Contracts.Teachers;
 using CourseManagement.Models;
 using CourseManagement.Services.Auth;
+using IdempotentAPI.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,6 +12,7 @@ namespace CourseManagement.Controllers.v2;
 [AllowAnonymous]
 [ApiController]
 [Route("api/v{version:apiVersion}/auth")]
+[Produces("application/json")]
 [ApiVersion(2)]
 public class AuthController : ControllerBase
 {
@@ -21,6 +23,7 @@ public class AuthController : ControllerBase
         _identityService = identityService;
     }
 
+    [Idempotent]
     [HttpPost("register")]
     public async Task<IActionResult> RegisterAsync([FromBody] CreateTeacherRequest request)
     {
