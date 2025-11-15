@@ -8,7 +8,7 @@ public static class ApplicationBuilderExtension
     public static IApplicationBuilder Configure(
         this WebApplication app)
     {
-        app.UseExceptionHandlerMiddleware();
+        //app.UseExceptionHandlerMiddleware();
         app.UseHttpsRedirection();
         app.UseSwaggerSetup();
         app.UseAuthorization();

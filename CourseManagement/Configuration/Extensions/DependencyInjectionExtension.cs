@@ -6,6 +6,9 @@ using CourseManagement.Models;
 using CourseManagement.Repositories;
 using CourseManagement.Services;
 using CourseManagement.Services.Auth;
+using IdempotentAPI.Cache.DistributedCache.Extensions.DependencyInjection;
+using IdempotentAPI.Core;
+using IdempotentAPI.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 
 namespace CourseManagement.Configuration.Extensions;
@@ -17,7 +20,9 @@ public static class DependencyInjectionExtension
         IConfiguration configuration)
     {
         services.AddControllers(options => options.SuppressAsyncSuffixInActionNames = false);
+        services.AddIdempotency();
         services.AddSwaggerSetup();
+        services.AddRedis(configuration);
         services.AddPostgres(configuration);
         services.AddOptions(configuration);
         services.AddSecurity();
@@ -33,7 +38,10 @@ public static class DependencyInjectionExtension
     {
         services.ConfigureOptions<ConfigureSwaggerOptions>();
         services
-            .AddSwaggerGen()
+            .AddSwaggerGen(options =>
+            {
+                options.OperationFilter<IdempotencyKeyOperationFilter>();
+            })
             .AddApiVersioning(options =>
             {
                 options.AssumeDefaultVersionWhenUnspecified = true;
@@ -58,6 +66,27 @@ public static class DependencyInjectionExtension
         services.AddDbContext<AppDbContext>(builder =>
             builder.UseNpgsql(
                 configuration.GetConnectionString(ConnectionStrings.POSTGRES)));
+
+        return services;
+    }
+
+    private static IServiceCollection AddRedis(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = configuration.GetConnectionString(ConnectionStrings.REDIS);
+        });
+
+        return services;
+    }
+
+    private static IServiceCollection AddIdempotency(
+        this IServiceCollection services)
+    {
+        services.AddIdempotentAPI(new IdempotencyOptions());
+        services.AddIdempotentAPIUsingDistributedCache();
 
         return services;
     }
