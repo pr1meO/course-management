@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using CourseManagement.Contracts;
 using CourseManagement.Contracts.Courses;
 using CourseManagement.Models;
 using CourseManagement.Services;
@@ -8,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CourseManagement.Controllers.v2;
 
-[AllowAnonymous]
+[Authorize(AuthenticationSchemes = "Access")]
 [ApiController]
 [Route("api/v{version:apiVersion}/courses")]
 [Produces("application/json")]
@@ -25,13 +26,19 @@ public class CourseController : ControllerBase
 
     [Idempotent]
     [HttpPost]
+    [ProducesResponseType(typeof(CourseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> CreateAsync([FromBody] CreateCourseRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Title) ||
             string.IsNullOrWhiteSpace(request.Description))
         {
-            return BadRequest(new
+            return BadRequest(new ExceptionResponse
             {
+                StatusCode = StatusCodes.Status400BadRequest,
                 Message = "Invalid request data.",
             });
         }
@@ -57,6 +64,8 @@ public class CourseController : ControllerBase
     }
 
     [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<CourseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> GetAsync()
     {
         IEnumerable<Course> courses = await _courseService.GetAsync();
@@ -76,6 +85,9 @@ public class CourseController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(CourseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> GetByIdAsync(Guid id)
     {
         Course course = await _courseService.GetByIdAsync(id);
@@ -93,6 +105,10 @@ public class CourseController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> UpdateByIdAsync(
         Guid id,
         [FromBody] UpdateCourseRequest request)
@@ -100,8 +116,9 @@ public class CourseController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.Title) ||
             string.IsNullOrWhiteSpace(request.Description))
         {
-            return BadRequest(new
+            return BadRequest(new ExceptionResponse
             {
+                StatusCode = StatusCodes.Status400BadRequest,
                 Message = "Invalid request data.",
             });
         }
@@ -116,6 +133,9 @@ public class CourseController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> DeleteByIdAsync(Guid id)
     {
         await _courseService.RemoveByIdAsync(id);

@@ -25,6 +25,10 @@ public class AuthController : ControllerBase
 
     [Idempotent]
     [HttpPost("register")]
+    [ProducesResponseType(typeof(TeacherDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> RegisterAsync([FromBody] CreateTeacherRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.LastName) ||
@@ -33,8 +37,9 @@ public class AuthController : ControllerBase
             string.IsNullOrWhiteSpace(request.Login) ||
             string.IsNullOrWhiteSpace(request.Password))
         {
-            return BadRequest(new
+            return BadRequest(new ExceptionResponse
             {
+                StatusCode = StatusCodes.Status400BadRequest,
                 Message = "Invalid request data.",
             });
         }
@@ -63,13 +68,18 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [ProducesResponseType(typeof(JwtTokenResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> LoginAsync([FromBody] LoginTeacherRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Login) ||
             string.IsNullOrWhiteSpace(request.Password))
         {
-            return BadRequest(new
+            return BadRequest(new ExceptionResponse
             {
+                StatusCode = StatusCodes.Status400BadRequest,
                 Message = "Invalid request data.",
             });
         }

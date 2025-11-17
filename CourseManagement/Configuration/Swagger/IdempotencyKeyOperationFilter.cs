@@ -6,18 +6,20 @@ namespace CourseManagement.Configuration.Swagger;
 
 public class IdempotencyKeyOperationFilter : IOperationFilter
 {
+    // Добавляет заголовок идемпотентности для методов c атрибутом [Idempotent]
+    // Вызывается для каждого метода действия
     public void Apply(
         OpenApiOperation operation,
         OperationFilterContext context)
     {
-        if (operation.Parameters == null)
-            operation.Parameters = new List<OpenApiParameter>();
+        operation.Parameters ??= [];
 
         if (!context.MethodInfo.GetCustomAttributes(true)
             .OfType<IdempotentAttribute>()
             .Any())
             return;
 
+        // Добавляем обязательный заголовок IdempotencyKey
         operation.Parameters.Add(new()
         {
             Name = "IdempotencyKey",
