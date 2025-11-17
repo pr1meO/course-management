@@ -1,5 +1,4 @@
-﻿using System.Net;
-using System.Security.Authentication;
+﻿using System.Security.Authentication;
 using CourseManagement.Contracts;
 
 namespace CourseManagement.Middlewares;
@@ -31,28 +30,28 @@ public class ExceptionHandlerMiddleware
         {
             KeyNotFoundException _ => new()
             {
-                StatusCode = HttpStatusCode.NotFound,
+                StatusCode = StatusCodes.Status404NotFound,
                 Message = "The requested resource could not be found.",
             },
             InvalidOperationException _ => new()
             {
-                StatusCode = HttpStatusCode.Conflict,
+                StatusCode = StatusCodes.Status409Conflict,
                 Message = "A conflict occurred while processing your request.",
             },
             AuthenticationException _ => new()
             {
-                StatusCode = HttpStatusCode.Unauthorized,
+                StatusCode = StatusCodes.Status401Unauthorized,
                 Message = "Authentication failed. Please check your credentials and try again.",
             },
             _ => new()
             {
-                StatusCode = HttpStatusCode.InternalServerError,
+                StatusCode = StatusCodes.Status500InternalServerError,
                 Message = "Internal server error.",
             }
         };
 
         context.Response.ContentType = "application/json";
-        context.Response.StatusCode = (int)response.StatusCode;
+        context.Response.StatusCode = response.StatusCode;
 
         await context.Response.WriteAsJsonAsync(response);
     }

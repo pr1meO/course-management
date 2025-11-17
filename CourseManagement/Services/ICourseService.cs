@@ -1,5 +1,4 @@
-﻿using CourseManagement.Contracts.Courses;
-using CourseManagement.Models;
+﻿using CourseManagement.Models;
 using CourseManagement.Repositories;
 
 namespace CourseManagement.Services;
