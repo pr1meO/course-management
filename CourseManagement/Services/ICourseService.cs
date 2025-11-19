@@ -10,7 +10,9 @@ public interface ICourseService
         string description,
         Guid teacherId);
 
-    Task<IEnumerable<Course>> GetAsync();
+    Task<IEnumerable<Course>> GetAsync(
+        int pageNumber,
+        int pageSize);
 
     Task<Course> GetByIdAsync(Guid id);
 
@@ -51,9 +53,13 @@ public class CourseService : ICourseService
         return course;
     }
 
-    public async Task<IEnumerable<Course>> GetAsync()
+    public async Task<IEnumerable<Course>> GetAsync(
+        int pageNumber,
+        int pageSize)
     {
-        IEnumerable<Course> courses = await _coursesRepository.GetAsync();
+        int offset = (pageNumber - 1) * pageSize;
+
+        IEnumerable<Course> courses = await _coursesRepository.GetAsync(offset, pageSize);
 
         return courses;
     }

@@ -15,7 +15,9 @@ public interface ITeacherService
         string lastName,
         string middleName);
 
-    Task<IEnumerable<Teacher>> GetAsync();
+    Task<IEnumerable<Teacher>> GetAsync(
+        int pageNumber,
+        int pageSize);
 
     Task<Teacher> GetByIdAsync(Guid id);
 
@@ -65,9 +67,13 @@ public class TeacherService : ITeacherService
         return teacher;
     }
 
-    public async Task<IEnumerable<Teacher>> GetAsync()
+    public async Task<IEnumerable<Teacher>> GetAsync(
+        int pageNumber,
+        int pageSize)
     {
-        IEnumerable<Teacher> teachers = await _teachersRepository.GetAsync();
+        int offset = (pageNumber - 1) * pageSize;
+
+        IEnumerable<Teacher> teachers = await _teachersRepository.GetAsync(offset, pageSize);
 
         return teachers;
     }
