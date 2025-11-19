@@ -2,6 +2,7 @@
 using CourseManagement.Contracts.Teachers;
 using CourseManagement.Models;
 using CourseManagement.Services;
+using CourseManagement.Validators;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,9 +23,14 @@ public class TeacherController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAsync()
+    public async Task<IActionResult> GetAsync(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
     {
-        IEnumerable<Teacher> teachers = await _teacherService.GetAsync();
+        PaginationValidator validator = new(pageNumber, pageSize);
+
+        IEnumerable<Teacher> teachers = await _teacherService
+            .GetAsync(validator.PageNumber, validator.PageSize);
 
         IEnumerable<TeacherDto> teachersDto = teachers
             .Select(t => new TeacherDto

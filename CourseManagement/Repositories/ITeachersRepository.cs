@@ -16,7 +16,9 @@ public interface ITeachersRepository
         string lastName,
         string middleName);
 
-    Task<IEnumerable<Teacher>> GetAsync();
+    Task<IEnumerable<Teacher>> GetAsync(
+        int offset,
+        int limit);
 
     Task<Teacher?> GetByIdAsync(Guid id);
 
@@ -75,11 +77,15 @@ public class TeachersRepository : ITeachersRepository
         return teacher;
     }
 
-    public async Task<IEnumerable<Teacher>> GetAsync()
+    public async Task<IEnumerable<Teacher>> GetAsync(
+        int offset,
+        int limit)
     {
         return await _appDbContext.Teachers
             .AsNoTracking()
             .OrderBy(t => t.LastName)
+            .Skip(offset)
+            .Take(limit)
             .ToListAsync();
     }
 

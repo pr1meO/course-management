@@ -10,7 +10,9 @@ public interface ICoursesRepository
         string description,
         Guid teacherId);
 
-    Task<IEnumerable<Course>> GetAsync();
+    Task<IEnumerable<Course>> GetAsync(
+        int offset,
+        int limit);
 
     Task<Course?> GetByIdAsync(Guid id);
 
@@ -50,11 +52,16 @@ public class CoursesRepository : ICoursesRepository
         return course;
     }
 
-    public async Task<IEnumerable<Course>> GetAsync()
+    public async Task<IEnumerable<Course>> GetAsync(
+        int offset,
+        int limit)
     {
         return await _appDbContext.Courses
             .Include(c => c.Teacher)
             .AsNoTracking()
+            .OrderBy(c => c.CreatedAt)
+            .Skip(offset)
+            .Take(limit)
             .ToListAsync();
     }
 
