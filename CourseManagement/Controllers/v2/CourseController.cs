@@ -1,4 +1,5 @@
-﻿using Asp.Versioning;
+﻿using System.Dynamic;
+using Asp.Versioning;
 using CourseManagement.Contracts;
 using CourseManagement.Contracts.Courses;
 using CourseManagement.Models;
@@ -18,11 +19,14 @@ namespace CourseManagement.Controllers.v2;
 public class CourseController : ControllerBase
 {
     private readonly ICourseService _courseService;
+    private readonly IDataShaper<CourseDto> _dataShaper;
 
     public CourseController(
-        ICourseService courseService)
+        ICourseService courseService,
+        IDataShaper<CourseDto> dataShaper)
     {
         _courseService = courseService;
+        _dataShaper = dataShaper;
     }
 
     [Idempotent]
@@ -66,8 +70,10 @@ public class CourseController : ControllerBase
 
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<CourseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<ExpandoObject>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> GetAsync(
+        [FromQuery] string? fields,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
     {
@@ -87,14 +93,22 @@ public class CourseController : ControllerBase
             })
             .ToList();
 
-        return Ok(coursesDto);
+        if (string.IsNullOrWhiteSpace(fields))
+            return Ok(coursesDto);
+
+        IEnumerable<ExpandoObject> shapedData = _dataShaper.ShapeData(coursesDto, fields);
+
+        return Ok(shapedData);
     }
 
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(CourseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ExpandoObject), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
-    public async Task<IActionResult> GetByIdAsync(Guid id)
+    public async Task<IActionResult> GetByIdAsync(
+        Guid id,
+        [FromQuery] string? fields)
     {
         Course course = await _courseService.GetByIdAsync(id);
 
@@ -107,7 +121,12 @@ public class CourseController : ControllerBase
             CreatedAt = course.CreatedAt,
         };
 
-        return Ok(courseDto);
+        if (string.IsNullOrWhiteSpace(fields))
+            return Ok(courseDto);
+
+        ExpandoObject shapedObject = _dataShaper.ShapeData(courseDto, fields);
+
+        return Ok(shapedObject);
     }
 
     [HttpPut("{id:guid}")]

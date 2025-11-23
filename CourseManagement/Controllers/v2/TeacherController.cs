@@ -1,4 +1,5 @@
-﻿using Asp.Versioning;
+﻿using System.Dynamic;
+using Asp.Versioning;
 using CourseManagement.Contracts;
 using CourseManagement.Contracts.Teachers;
 using CourseManagement.Models;
@@ -16,17 +17,22 @@ namespace CourseManagement.Controllers.v2;
 public class TeacherController : ControllerBase
 {
     private readonly ITeacherService _teacherService;
+    private readonly IDataShaper<TeacherDto> _dataShaper;
 
     public TeacherController(
-        ITeacherService teacherService)
+        ITeacherService teacherService,
+        IDataShaper<TeacherDto> dataShaper)
     {
         _teacherService = teacherService;
+        _dataShaper = dataShaper;
     }
 
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<TeacherDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<ExpandoObject>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> GetAsync(
+        [FromQuery] string? fields,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
     {
@@ -46,14 +52,22 @@ public class TeacherController : ControllerBase
             })
             .ToList();
 
-        return Ok(teachersDto);
+        if (string.IsNullOrWhiteSpace(fields))
+            return Ok(teachersDto);
+
+        IEnumerable<ExpandoObject> shapedData = _dataShaper.ShapeData(teachersDto, fields);
+
+        return Ok(shapedData);
     }
 
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(TeacherDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ExpandoObject), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
-    public async Task<IActionResult> GetByIdAsync(Guid id)
+    public async Task<IActionResult> GetByIdAsync(
+        Guid id,
+        [FromQuery] string? fields)
     {
         Teacher teacher = await _teacherService.GetByIdAsync(id);
 
@@ -66,7 +80,12 @@ public class TeacherController : ControllerBase
             MiddleName = teacher.MiddleName,
         };
 
-        return Ok(teacherDto);
+        if (string.IsNullOrWhiteSpace(fields))
+            return Ok(teacherDto);
+
+        ExpandoObject shapedObject = _dataShaper.ShapeData(teacherDto, fields);
+
+        return Ok(shapedObject);
     }
 
     [HttpPut("{id:guid}")]
