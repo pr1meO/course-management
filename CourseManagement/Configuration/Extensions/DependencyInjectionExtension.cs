@@ -35,6 +35,7 @@ public static class DependencyInjectionExtension
         services.AddPostgres(configuration);
         services.AddOptions(configuration);
         services.AddSecurity();
+        services.AddDataShaping();
         services.AddJwtAuthentication(configuration);
         services.AddAuthenticationCore();
         services.AddApplicationRepositories();
@@ -157,7 +158,7 @@ public static class DependencyInjectionExtension
     {
         services.AddRateLimiter(options =>
         {
-            // Общий лимитер на основе 'фиксированного окна' для всех входящих запросов.
+            // Общий лимитер на основе 'фиксированного окна' для всех входящих запросов
             options.GlobalLimiter = PartitionedRateLimiter
                 .Create<HttpContext, string>(context =>
                 {
@@ -176,16 +177,16 @@ public static class DependencyInjectionExtension
                         });
                 });
 
-            // Этот обработчик вызывается, когда клиент превысил лимит запросов.
+            // Этот обработчик вызывается, когда клиент превысил лимит запросов
             options.OnRejected = async (context, _) =>
             {
                 if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan retryAfter))
                 {
-                    // RetryAfter - заголовок: через какое время можно повторить запрос.
+                    // RetryAfter - заголовок: через какое время можно повторить запрос
                     context.HttpContext.Response.Headers.RetryAfter =
                         ((int)retryAfter.TotalSeconds).ToString(NumberFormatInfo.InvariantInfo);
 
-                    // X-Limit-Remaining - заголовок: количество доступных запросов.
+                    // X-Limit-Remaining - заголовок: количество доступных запросов
                     context.HttpContext.Response.Headers.Append("X-Limit-Remaining", "0");
                 }
 
@@ -203,6 +204,14 @@ public static class DependencyInjectionExtension
                     CancellationToken.None);
             };
         });
+
+        return services;
+    }
+
+    private static IServiceCollection AddDataShaping(
+        this IServiceCollection services)
+    {
+        services.AddScoped(typeof(IDataShaper<>), typeof(DataShaper<>));
 
         return services;
     }
