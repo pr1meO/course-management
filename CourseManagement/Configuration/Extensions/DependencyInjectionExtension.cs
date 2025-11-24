@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using StackExchange.Redis;
 
 namespace CourseManagement.Configuration.Extensions;
 
@@ -63,6 +64,10 @@ public static class DependencyInjectionExtension
         {
             options.Configuration = configuration.GetConnectionString(ConnectionStrings.REDIS);
         });
+
+        services.AddSingleton<IConnectionMultiplexer>(_ =>
+            ConnectionMultiplexer.Connect(
+                configuration.GetConnectionString(ConnectionStrings.REDIS)!));
 
         return services;
     }
