@@ -3,7 +3,7 @@ using CourseManagement.Middlewares;
 
 namespace CourseManagement.Configuration.Extensions;
 
-public static class ApplicationBuilderExtension
+public static class ApplicationBuilderExtensions
 {
     public static IApplicationBuilder Configure(
         this WebApplication app)

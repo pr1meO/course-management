@@ -22,7 +22,7 @@ using StackExchange.Redis;
 
 namespace CourseManagement.Configuration.Extensions;
 
-public static class DependencyInjectionExtension
+public static class DependencyInjectionExtensions
 {
     public static IServiceCollection AddConfiguration(
         this IServiceCollection services,
