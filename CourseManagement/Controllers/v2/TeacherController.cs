@@ -1,0 +1,132 @@
+﻿using System.Dynamic;
+using Asp.Versioning;
+using CourseManagement.Contracts;
+using CourseManagement.Contracts.Teachers;
+using CourseManagement.Models;
+using CourseManagement.Services;
+using CourseManagement.Validators;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace CourseManagement.Controllers.v2;
+
+[Authorize(AuthenticationSchemes = "Access")]
+[ApiController]
+[Route("api/v{version:apiVersion}/teachers")]
+[ApiVersion(2)]
+public class TeacherController : ControllerBase
+{
+    private readonly ITeacherService _teacherService;
+    private readonly IDataShaper<TeacherDto> _dataShaper;
+
+    public TeacherController(
+        ITeacherService teacherService,
+        IDataShaper<TeacherDto> dataShaper)
+    {
+        _teacherService = teacherService;
+        _dataShaper = dataShaper;
+    }
+
+    [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<TeacherDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<ExpandoObject>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> GetAsync(
+        [FromQuery] string? fields,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        PaginationValidator validator = new(pageNumber, pageSize);
+
+        IEnumerable<Teacher> teachers = await _teacherService
+            .GetAsync(validator.PageNumber, validator.PageSize);
+
+        IEnumerable<TeacherDto> teachersDto = teachers
+            .Select(t => new TeacherDto
+            {
+                Id = t.Id,
+                Login = t.Login,
+                FirstName = t.FirstName,
+                LastName = t.LastName,
+                MiddleName = t.MiddleName,
+            })
+            .ToList();
+
+        if (string.IsNullOrWhiteSpace(fields))
+            return Ok(teachersDto);
+
+        IEnumerable<ExpandoObject> shapedData = _dataShaper.ShapeData(teachersDto, fields);
+
+        return Ok(shapedData);
+    }
+
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(TeacherDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ExpandoObject), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> GetByIdAsync(
+        Guid id,
+        [FromQuery] string? fields)
+    {
+        Teacher teacher = await _teacherService.GetByIdAsync(id);
+
+        TeacherDto teacherDto = new()
+        {
+            Id = teacher.Id,
+            Login = teacher.Login,
+            FirstName = teacher.FirstName,
+            LastName = teacher.LastName,
+            MiddleName = teacher.MiddleName,
+        };
+
+        if (string.IsNullOrWhiteSpace(fields))
+            return Ok(teacherDto);
+
+        ExpandoObject shapedObject = _dataShaper.ShapeData(teacherDto, fields);
+
+        return Ok(shapedObject);
+    }
+
+    [HttpPut("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> UpdateByIdAsync(
+        Guid id,
+        [FromBody] UpdateTeacherRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.LastName) ||
+            string.IsNullOrWhiteSpace(request.FirstName) ||
+            string.IsNullOrWhiteSpace(request.MiddleName) ||
+            string.IsNullOrWhiteSpace(request.Login))
+        {
+            return BadRequest(new ExceptionResponse
+            {
+                StatusCode = StatusCodes.Status400BadRequest,
+                Message = "Invalid request data.",
+            });
+        }
+
+        await _teacherService.UpdateByIdAsync(
+            id,
+            request.Login,
+            request.FirstName,
+            request.LastName,
+            request.MiddleName);
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> DeleteByIdAsync(Guid id)
+    {
+        await _teacherService.RemoveByIdAsync(id);
+
+        return NoContent();
+    }
+}
