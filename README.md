@@ -8,21 +8,80 @@ The system provides operations for user registration, authentication, retrieving
 Follow the steps below to install and run the application.
 
 1. Clone the repo
-   ```
-   git clone https://github.com/username/course-management.git
-   ```
+    ```
+    git clone https://github.com/username/course-management.git
+    ```
+2. Start required services (RabbitMq)
+    ```
+    docker run -d -p 5672:5672 -p 15672:15672 --name rabbitmq rabbitmq:3.13-management
+    ```
 3. Navigate into project folder
     ```
-    cd CourseManagement
+    cd CourseManagement/CourseManagement
     ```
-4. Start required services
+4. Run the application
     ```
-    docker compose up -d
+    dotnet run --project CourseManagement.csproj
     ```
 5. Open Swagger UI
     ```
-    http://localhost:8080/swagger
+    http://localhost:5189/swagger
     ```
+
+## Message Exchange Scheme
+The system uses asynchronous message-based interaction between client and server based on RabbitMQ.
+
+High-level flow:
+```
+HTTP Client
+    -> REST Controller (Producer)
+        -> [api.requests]
+            -> Server (Consumer)
+                -> [reply queue] / [api.responses]
+                    -> REST Controller
+                        -> HTTP Client
+```
+
+## Queues and Routing Structure
+The following queues are used in the system:
+- `api.requests` - incoming requests from clients
+- `api.responses` - responses when reply queue is not specified
+- `dead_letter_queue` - messages that could not be processed (DLQ)
+
+Routing is performed using the default RabbitMQ exchange, where the routing key equals the queue name.
+
+## Message Format
+### [1] Create teacher
+#### Request
+`POST /api/v2/rabbit/teachers`
+```
+{
+  "id": "<ID>",
+  "version": "v1",
+  "action": "create_teacher",
+  "auth": "<YOUR_API_KEY>",
+  "data": {
+    "login": "user",
+    "passwordHash": "<PASSWORD_HASH>",
+    "firstName": "ivan",
+    "lastName": "ivanov",
+    "middleName": "ivanovich"
+  }
+}
+```
+#### Response
+```
+{
+  "correlation_id": "<ID>",
+  "status": "ok",
+  "data": {
+    "teacher_id": "<TEACHER_ID>"
+  },
+  "error": null,
+  "timestamp": <ISO_TIMESTAMP>
+}
+```
+
 ## REST API
 The REST API to the example app is described below.
 ### [1] Register
