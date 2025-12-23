@@ -1,5 +1,6 @@
 ﻿using Asp.Versioning.ApiExplorer;
 using CourseManagement.Middlewares;
+using CourseManagement.RabbitMq.Consumers;
 
 namespace CourseManagement.Configuration.Extensions;
 
@@ -9,12 +10,24 @@ public static class ApplicationBuilderExtensions
         this WebApplication app)
     {
         app.UseExceptionHandlerMiddleware();
+        app.UseConsumer();
         app.UseHttpsRedirection();
         app.UseSwaggerSetup();
         app.UseAuthentication();
         app.UseAuthorization();
         app.UseRateLimiter();
         app.MapControllers();
+
+        return app;
+    }
+
+    private static IApplicationBuilder UseConsumer(
+        this WebApplication app)
+    {
+        IApiMessageConsumer consumer = app.Services
+            .GetRequiredService<IApiMessageConsumer>();
+
+        consumer.StartConsuming();
 
         return app;
     }

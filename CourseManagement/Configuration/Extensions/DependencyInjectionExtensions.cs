@@ -8,6 +8,9 @@ using CourseManagement.Configuration.Options;
 using CourseManagement.Configuration.Swagger;
 using CourseManagement.Contracts;
 using CourseManagement.Models;
+using CourseManagement.RabbitMq.Consumers;
+using CourseManagement.RabbitMq.Producers;
+using CourseManagement.RabbitMq.Services;
 using CourseManagement.Repositories;
 using CourseManagement.Services;
 using CourseManagement.Services.Auth;
@@ -30,6 +33,7 @@ public static class DependencyInjectionExtensions
     {
         services.AddControllers(options => options.SuppressAsyncSuffixInActionNames = false);
         services.AddFixedRateLimiter();
+        services.AddRabbitMq();
         services.AddIdempotency();
         services.AddSwaggerSetup();
         services.AddRedis(configuration);
@@ -41,6 +45,27 @@ public static class DependencyInjectionExtensions
         services.AddAuthenticationCore();
         services.AddApplicationRepositories();
         services.AddApplicationServices();
+
+        return services;
+    }
+
+    private static IServiceCollection AddRabbitMq(
+        this IServiceCollection services)
+    {
+        services.AddSingleton(new RabbitMqOptions
+        {
+            HostName = "localhost",
+            Port = 5672,
+            UserName = "guest",
+            Password = "guest",
+            VirtualHost = "/",
+        });
+
+        services.AddSingleton<IApiMessageConsumer, ApiMessageConsumer>();
+        services.AddScoped<IMessageProcessingService, MessageProcessingService>();
+        services.AddSingleton<IIdempotencyService, InMemoryIdempotencyService>();
+
+        services.AddSingleton<IRabbitMqProducer, RabbitMqProducer>();
 
         return services;
     }
