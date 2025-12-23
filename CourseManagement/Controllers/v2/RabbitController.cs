@@ -1,5 +1,6 @@
 ﻿using Asp.Versioning;
 using CourseManagement.Configuration.Options;
+using CourseManagement.Contracts;
 using CourseManagement.Contracts.Courses;
 using CourseManagement.Contracts.Teachers;
 using CourseManagement.RabbitMq.Messages;
@@ -33,6 +34,9 @@ public class RabbitController : ControllerBase
     }
 
     [HttpPost("teachers")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> CreateTeacher([FromBody] CreateTeacherRequest request)
     {
         StandardRequestMessage message = new()
@@ -60,6 +64,9 @@ public class RabbitController : ControllerBase
     }
 
     [HttpGet("teachers/{id:guid}")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> GetTeacherById(Guid id)
     {
         StandardRequestMessage message = new()
@@ -82,6 +89,9 @@ public class RabbitController : ControllerBase
     }
 
     [HttpGet("teachers")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> GetTeachers(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
@@ -107,6 +117,9 @@ public class RabbitController : ControllerBase
     }
 
     [HttpPut("teachers/{id:guid}")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> UpdateTeacherById(
         Guid id,
         [FromBody] UpdateTeacherRequest request)
@@ -135,6 +148,9 @@ public class RabbitController : ControllerBase
     }
 
     [HttpDelete("teachers/{id:guid}")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> DeleteTeacherById([FromRoute] Guid id)
     {
         StandardRequestMessage message = new()
@@ -157,6 +173,9 @@ public class RabbitController : ControllerBase
     }
 
     [HttpPost("courses")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> CreateCourse([FromBody] CreateCourseRequest request)
     {
         StandardRequestMessage message = new()
@@ -181,6 +200,9 @@ public class RabbitController : ControllerBase
     }
 
     [HttpGet("courses/{id:guid}")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> GetCoursetById(Guid id)
     {
         StandardRequestMessage message = new()
@@ -203,6 +225,9 @@ public class RabbitController : ControllerBase
     }
 
     [HttpGet("courses")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> GetCourses(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
@@ -228,6 +253,9 @@ public class RabbitController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> UpdateCoursetById(
         Guid id,
         [FromBody] UpdateCourseRequest request)
@@ -255,6 +283,9 @@ public class RabbitController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ExceptionResponse), StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> DeleteCoursetById(Guid id)
     {
         StandardRequestMessage message = new()
